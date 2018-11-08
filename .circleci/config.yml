@@ -1,0 +1,57 @@
+version: 2
+jobs:
+  build:
+    working_directory: /usr/src/app
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --no-cache \
+              py-pip=9.0.0-r1
+            pip install \
+              docker-compose==1.12.0 \
+              awscli==1.11.76
+      - run:
+          name: Set convenience environment variables
+          command: |
+            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
+            echo 'export FULL_WEB_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}_web:${CIRCLE_SHA1}"' >> $BASH_ENV
+            echo 'export FULL_JOBS_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}_jobs:${CIRCLE_SHA1}"' >> $BASH_ENV
+            echo 'export FULL_WEBPACK_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}_webpack:${CIRCLE_SHA1}"' >> $BASH_ENV
+            echo 'export FULL_POSTGRES_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}_postgres:${CIRCLE_SHA1}"' >> $BASH_ENV
+      - run:
+          name: Create ENV File
+          command: |
+            echo "COMPOSE_FILE=docker-compose.yml:docker-compose.override.yml:docker-compose.trunk.yml:docker-compose/cassandra.override.yml:docker-compose/mailcatcher.override.yml" >> .env
+      - run:
+          name: Build Web Docker image
+          command: |
+            docker build -t canvas-lms_web .
+          no_output_timeout: 30m
+      - deploy:
+          name: Push Web image
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              login="$(aws ecr get-login)"
+              ${login}
+              docker tag canvas-lms_web "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/canvas-lms_web:${CIRCLE_SHA1}"
+              docker push "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/canvas-lms_web:${CIRCLE_SHA1}"
+            fi
+      - run:
+          name: Build Postgres Docker image
+          command: |
+            docker build -t canvas-lms_postgres ./docker-compose/postgres
+          no_output_timeout: 30m
+      - deploy:
+          name: Push Postgres Docker image
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              login="$(aws ecr get-login)"
+              ${login}
+              docker tag canvas-lms_postgres "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/canvas-lms_postgres:${CIRCLE_SHA1}"
+              docker push "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/canvas-lms_postgres:${CIRCLE_SHA1}"
+            fi
