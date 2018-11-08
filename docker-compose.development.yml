@@ -1,0 +1,30 @@
+version: '3'
+services:
+  web:
+    image: instructure/canvas-lms:stable
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      PASSENGER_STARTUP_TIMEOUT: 3600
+      RAILS_ENV: development
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  jobs:
+    image: instructure/canvas-lms:stable
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      PASSENGER_STARTUP_TIMEOUT: 3600
+      RAILS_ENV: development
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    command: bundle exec script/delayed_job run
+  webpack:
+    image: instructure/canvas-lms:stable
+    environment:
+      PASSENGER_STARTUP_TIMEOUT: 3600
+      RAILS_ENV: development
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    command: yarn run webpack
+  postgres:
+    image: postgres:9.5
+  redis:
+    image: redis:alpine
+  cassandra:
+    image: cassandra:2.2
