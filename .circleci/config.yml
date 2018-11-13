@@ -17,8 +17,7 @@ jobs:
       - run:
           name: Download Environment File from S3
           command: |
-            echo "COMPOSE_FILE=docker-compose.yml:docker-compose.override.yml:docker-compose.trunk.yml:docker-compose/cassandra.override.yml:docker-compose/mailcatcher.override.yml" >> .env
-      - run:
+            aws s3 cp s3://${CONFIG_BUCKET}/ . --recursive 
           name: Build Docker Images
           command: |
             docker-compose build
