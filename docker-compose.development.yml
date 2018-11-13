@@ -1,30 +1,97 @@
-version: '3'
+version: '2'
 services:
   web:
-    image: instructure/canvas-lms:stable
+    build:
+      context: https://github.com/FearlessSolutions/canvas-lms.git#stable
+    volumes:
+      - canvas-rce_node_modules:/usr/src/app/packages/canvas-rce/node_modules
+      - canvas-rce_lib:/usr/src/app/packages/canvas-rce/lib
     environment:
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       PASSENGER_STARTUP_TIMEOUT: 3600
-      RAILS_ENV: development
+      RAILS_ENV: ${RAILS_ENV}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      CANVAS_LMS_ADMIN_EMAIL: ${CANVAS_LMS_ADMIN_EMAIL}
+      CANVAS_LMS_ADMIN_PASSWORD: ${CANVAS_LMS_ADMIN_PASSWORD}
+      CANVAS_LMS_ACCOUNT_NAME: ${CANVAS_LMS_ACCOUNT_NAME}
+      CANVAS_LMS_STATS_COLLECTION: ${CANVAS_LMS_STATS_COLLECTION}
+      APP_PORT: ${APP_DOMAIN}
+      APP_DOMAIN: ${VIRTUAL_HOST}
+    links:
+      - jobs
+      - webpack
+      - postgres
+      - redis
+      - cassandra
   jobs:
-    image: instructure/canvas-lms:stable
+    build:
+      context: https://github.com/FearlessSolutions/canvas-lms.git#stable
     environment:
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       PASSENGER_STARTUP_TIMEOUT: 3600
-      RAILS_ENV: development
+      RAILS_ENV: ${RAILS_ENV}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      CANVAS_LMS_ADMIN_EMAIL: ${CANVAS_LMS_ADMIN_EMAIL}
+      CANVAS_LMS_ADMIN_PASSWORD: ${CANVAS_LMS_ADMIN_PASSWORD}
+      CANVAS_LMS_ACCOUNT_NAME: ${CANVAS_LMS_ACCOUNT_NAME}
+      CANVAS_LMS_STATS_COLLECTION: ${CANVAS_LMS_STATS_COLLECTION}
+      APP_PORT: ${APP_DOMAIN}
+      APP_DOMAIN: ${VIRTUAL_HOST}
     command: bundle exec script/delayed_job run
+    volumes:
+      - canvas-rce_node_modules:/usr/src/app/packages/canvas-rce/node_modules
+      - canvas-rce_lib:/usr/src/app/packages/canvas-rce/lib
   webpack:
-    image: instructure/canvas-lms:stable
+    build:
+      context: https://github.com/FearlessSolutions/canvas-lms.git#stable
+    volumes:
+      - canvas-rce_node_modules:/usr/src/app/packages/canvas-rce/node_modules
+      - canvas-rce_lib:/usr/src/app/packages/canvas-rce/lib
     environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
       PASSENGER_STARTUP_TIMEOUT: 3600
-      RAILS_ENV: development
+      RAILS_ENV: ${RAILS_ENV}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      CANVAS_LMS_ADMIN_EMAIL: ${CANVAS_LMS_ADMIN_EMAIL}
+      CANVAS_LMS_ADMIN_PASSWORD: ${CANVAS_LMS_ADMIN_PASSWORD}
+      CANVAS_LMS_ACCOUNT_NAME: ${CANVAS_LMS_ACCOUNT_NAME}
+      CANVAS_LMS_STATS_COLLECTION: ${CANVAS_LMS_STATS_COLLECTION}
+      APP_PORT: ${APP_DOMAIN}
+      APP_DOMAIN: ${VIRTUAL_HOST}
     command: yarn run webpack
   postgres:
-    image: postgres:9.5
+    build:
+      context: https://github.com/FearlessSolutions/canvas-lms.git#stable:docker-compose/postgres
+    environment:
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
   redis:
     image: redis:alpine
   cassandra:
-    image: cassandra:2.2
+    volumes:
+      - "./cassandra-init.sh:/cassandra-init.sh"
+    command: "sh /cassandra-init.sh"
+  rce-api:
+    build:
+      context: https://github.com/instructure/canvas-rce-api.git#master
+    environment:
+      # VIRTUAL_HOST: ${RCE_VIRTUAL_HOST}
+      NODE_ENV: ${NODE_ENV}
+      STATSD_HOST: ${STATSD_HOST}
+      STATSD_PORT: ${STATSD_PORT}
+      ECOSYSTEM_SECRET: ${ECOSYSTEM_SECRET}
+      ECOSYSTEM_KEY: ${ECOSYSTEM_KEY}
+      CIPHER_PASSWORD: ${CIPHER_PASSWORD}
+volumes:
+  canvas-rce_node_modules: {}
+  canvas-rce_lib: {}
