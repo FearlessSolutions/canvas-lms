@@ -21,13 +21,9 @@ jobs:
           command: |
             aws s3 cp s3://${CONFIG_BUCKET}/ . --recursive
       - run:
-          name: Build Docker Images
+          name: Build, Tag and Push Docker Images
           command: |
             docker-compose build
-          no_output_timeout: 30m
-      - run:
-          name: Tag and Push Docker Images
-          command: |
             login="$(aws ecr get-login)"
             ${login}
             images=$(docker-compose images -q | xargs docker inspect --format='{{ index .RepoTags 0}}' | cut -d':' -f1)
