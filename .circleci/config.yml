@@ -1,4 +1,6 @@
 version: 2
+executors:
+  working_directory: /
 jobs:
   build:
     docker:
@@ -17,7 +19,7 @@ jobs:
       - run:
           name: Download Environment File from S3
           command: |
-            aws s3 cp s3://${CONFIG_BUCKET}/ . --recursive 
+            aws s3 cp s3://${CONFIG_BUCKET}/ . --recursive
           name: Build Docker Images
           command: |
             docker-compose build
