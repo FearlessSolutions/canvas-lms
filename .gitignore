@@ -84,3 +84,6 @@ coverage-karma
 
 # Ignore any backup files
 *.bak
+
+# Docker Compose for Eclipse
+docker-compose.che.yml
