@@ -25,7 +25,6 @@ services:
       - webpack
       - postgres
       - redis
-      - cassandra
   jobs:
     build:
       context: https://github.com/FearlessSolutions/canvas-lms.git#stable
