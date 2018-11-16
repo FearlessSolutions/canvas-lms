@@ -6,16 +6,24 @@ development:
     servers:
     - cassandra:9160
     keyspace: page_views
+    timeout: 1000
+    retries: 3
   auditors:
     servers:
     - cassandra:9160
     keyspace: auditors
+    timeout: 1000
+    retries: 3    
 test:
   page_views:
     servers:
     - cassandra:9160
     keyspace: page_views_test
+    timeout: 1000
+    retries: 3    
   auditors:
     servers:
     - cassandra:9160
     keyspace: auditors_test
+    timeout: 1000
+    retries: 3    
