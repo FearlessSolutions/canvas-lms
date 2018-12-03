@@ -2,14 +2,14 @@ common: &common
   adapter: postgresql
   host: postgres
   encoding: utf8
-  username: postgres
+  username:  <%= ENV['POSTGRES_USER'] %>
   password: <%= ENV['POSTGRES_PASSWORD'] %>
+  database:  <%= ENV['POSTGRES_DB'] %>
   timeout: 5000
   prepared_statements: false
 
 production: &production
   <<: *common
-  database: canvas
   open: true
 
 development:

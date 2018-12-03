@@ -2,16 +2,17 @@ version: '2'
 services:
   web:
     build:
-      context: https://github.com/FearlessSolutions/canvas-lms.git#stable
+      context: https://github.com/FearlessSolutions/canvas-lms.git#master
     volumes:
       - canvas-rce_node_modules:/usr/src/app/packages/canvas-rce/node_modules
       - canvas-rce_lib:/usr/src/app/packages/canvas-rce/lib
     environment:
+      YARN_VERSION: 1.9.4
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       PASSENGER_STARTUP_TIMEOUT: 3600
       RAILS_ENV: ${RAILS_ENV}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       CANVAS_LMS_ADMIN_EMAIL: ${CANVAS_LMS_ADMIN_EMAIL}
@@ -27,13 +28,13 @@ services:
       - redis
   jobs:
     build:
-      context: https://github.com/FearlessSolutions/canvas-lms.git#stable
+      context: https://github.com/FearlessSolutions/canvas-lms.git#master
     environment:
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       PASSENGER_STARTUP_TIMEOUT: 3600
       RAILS_ENV: ${RAILS_ENV}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       CANVAS_LMS_ADMIN_EMAIL: ${CANVAS_LMS_ADMIN_EMAIL}
@@ -48,7 +49,7 @@ services:
       - canvas-rce_lib:/usr/src/app/packages/canvas-rce/lib
   webpack:
     build:
-      context: https://github.com/FearlessSolutions/canvas-lms.git#stable
+      context: https://github.com/FearlessSolutions/canvas-lms.git#master
     volumes:
       - canvas-rce_node_modules:/usr/src/app/packages/canvas-rce/node_modules
       - canvas-rce_lib:/usr/src/app/packages/canvas-rce/lib
@@ -57,7 +58,7 @@ services:
       PASSENGER_STARTUP_TIMEOUT: 3600
       RAILS_ENV: ${RAILS_ENV}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       CANVAS_LMS_ADMIN_EMAIL: ${CANVAS_LMS_ADMIN_EMAIL}
@@ -69,9 +70,9 @@ services:
     command: yarn run webpack
   postgres:
     build:
-      context: https://github.com/FearlessSolutions/canvas-lms.git#stable:docker-compose/postgres
+      context: https://github.com/FearlessSolutions/canvas-lms.git#master:docker-compose/postgres
     environment:
-      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
   adminer:
